@@ -7,6 +7,6 @@ echo "$0"
 cd $GOPATH
 cd ..
 git config --global credential.helper cache
-#git clone https://github.com/KoreaHaos/ewha_spring_2016_cleanup.git "$C9_PROJECT_CLEAN_UP_DIR"
+git clone https://github.com/KoreaHaos/ewha_spring_2016_cleanup.git "$cleanup_directory"
 #zip -r "$GOPATH/$zip_file_name" "workspace"*
 #zip -r "$GOPATH/$zip_file_name" "workspace"* -x *ewha_spring_2016_cleanup*
