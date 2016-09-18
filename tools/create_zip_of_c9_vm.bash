@@ -18,10 +18,17 @@ function init_script(){
     set_short_log_name;
     set_long_log_name;
     set_temp_file_name;
+    set_zipped_list_name;
     
     clone_clean_up_repo;
     zip_up_workspace_and_put_it_in_repo_directory_and_update_log;
     fill_logs_pre_push;
+    
+    pre_add_commit_push_changes;
+    fill_logs_post_push;
+    post_add_commit_push_changes;
+    
+    timestamp_script_and_echo "FINAL";
 }
 
 
@@ -194,13 +201,46 @@ function fill_logs_pre_push(){
     cd $GOPATH;
     cd ..;
     
-    echo_line_break "PPS" >> "$log_directory_name_and_path"/"$long_log_name";
+    echo_line_break "PrePS" >> "$log_directory_name_and_path"/"$long_log_name";
     timestamp_script_and_echo "PrePush" >> "$log_directory_name_and_path"/"$long_log_name";
     echo_timestamp_zip >>  "$log_directory_name_and_path"/"$long_log_name";
     echo_timestamp_clone >>  "$log_directory_name_and_path"/"$long_log_name";
     echo_line_break >> "$log_directory_name_and_path"/"$long_log_name";
     cat "$log_directory_name_and_path"/"$temp_log_file_name" >> "$log_directory_name_and_path"/"$long_log_name";
-    echo_line_break "PPF" >> "$log_directory_name_and_path"/"$long_log_name";
+    echo_line_break "PrePF" >> "$log_directory_name_and_path"/"$long_log_name";
+}
+
+function fill_logs_post_push(){
+    cd $GOPATH;
+    cd ..;
+    
+    echo_line_break "PostPS" >> "$log_directory_name_and_path"/"$long_log_name";
+    #echo_timestamp_zip >>  "$log_directory_name_and_path"/"$long_log_name";
+    #echo_timestamp_clone >>  "$log_directory_name_and_path"/"$long_log_name";
+    echo_timestamp_add_commit_push  >> "$log_directory_name_and_path"/"$long_log_name";
+    echo_line_break >> "$log_directory_name_and_path"/"$long_log_name";
+    cat "$log_directory_name_and_path"/"$temp_log_file_name" >> "$log_directory_name_and_path"/"$long_log_name";
+    echo $C9_PROJECT >> "$log_directory_name_and_path"/"$zipped_machines_log_name";
+    timestamp_script_and_echo "PostPush" >> "$log_directory_name_and_path"/"$long_log_name";
+    echo_line_break "PostPF" >> "$log_directory_name_and_path"/"$long_log_name";
+}
+
+function pre_add_commit_push_changes(){
+    cd $cleanup_repo_directory_name_and_path;
+    start_scripted_repo_add_commit_push=$(get_current_time_nano_seconds_since_epoch);
+    git add --all;
+    git commit -m "testing PRE";
+    git push --all;
+    end_scripted_repo_add_commit_push=$(get_current_time_nano_seconds_since_epoch);
+}
+
+function post_add_commit_push_changes(){
+    cd $cleanup_repo_directory_name_and_path;
+    #start_scripted_repo_add_commit_push=$(get_current_time_nano_seconds_since_epoch);
+    git add --all;
+    git commit -m "testing POST";
+    git push --all;
+    #end_scripted_repo_add_commit_push=$(get_current_time_nano_seconds_since_epoch);
 }
 
 run_script
