@@ -21,9 +21,11 @@ function init_script(){
     
     clone_clean_up_repo;
     zip_up_workspace_and_put_it_in_repo_directory_and_update_log;
-    #set_script_end_time;
-    output_timers_long;
+    fill_logs_pre_push;
 }
+
+
+
 function say_hello(){
     echo "Hello!";
 }
@@ -65,6 +67,7 @@ END
 
 function timestamp_script_and_echo(){
     set_script_end_time;
+    echo "SCRIPT STAMP : $1"
     echo_time_stamp "$scripted_clean_up_start_time" "$scripted_clean_up_end_time" "script"
 }
 
@@ -83,7 +86,7 @@ function echo_timestamp_add_commit_push(){
 
 function echo_line_break(){
     echo ""
-    echo "----------------------------------------------------"
+    echo "---------------------------$1---------------------------"
     echo ""
 }
 
@@ -99,7 +102,7 @@ function echo_time_stamp(){
     echo "$time_end = $stamp_id end time = $(prettify_date "$time_end")."
     echo "$run_time = $stamp_id total run time = xxx min xxx sex xxx ns"
     
-    echo_line_break;
+    echo_line_break "*TS*";
 
 }
 
@@ -147,7 +150,7 @@ function set_log_directory_name(){
 }
 
 function set_log_directory_name_and_path(){
-    log_directory_name_and_path="$cleanup_repo_directory_name_and_path"/"c9_vm_zips"
+    log_directory_name_and_path="$cleanup_repo_directory_name_and_path"/"c9_vm_zips/logs"
 }
 
 function set_short_log_name(){
@@ -155,26 +158,28 @@ function set_short_log_name(){
 }
 
 function set_long_log_name(){
-    short_log_name="c9_cleanup_long_log.txt"
+    long_log_name="c9_cleanup_long_log.txt"
 }
 
 function set_zipped_list_name(){
-    short_log_name="c9_zipped_vm_shortlist.txt"
+    zipped_machines_log_name="c9_zipped_vm_shortlist.txt"
 }
 
 function set_temp_file_name(){
     temp_log_file_name="temp_log_file.txt"
-    echo -n "" > /tmp/filename
+    #echo -n "" > /tmp/filename
 }
 
 # ToDo : Make it terminate if the authentication fails!
 function clone_clean_up_repo(){
-    temp_out="$(mktemp)"
+    temp_out=$(mktemp /tmp/output.XXX) || { echo "Failed to create temp file"; exit 1; }
     scripted_repo_clone_start=$(get_current_time_nano_seconds_since_epoch)
+    echo_line_break "CS" > $temp_out;
     git config --global credential.helper cache
-    git clone "$clean_up_repo_url" "$cleanup_repo_directory_name_and_path" >> $temp_out;
+    git clone -v --progress "$clean_up_repo_url" "$cleanup_repo_directory_name_and_path" >>$temp_out  2>&1;
     scripted_repo_clone_end=$(get_current_time_nano_seconds_since_epoch)
-    cat temp_out >> "$log_directory_name_and_path"/"$temp_log_file_name";
+    echo_line_break "CF" >> $temp_out;
+    cat $temp_out >> "$log_directory_name_and_path"/"$temp_log_file_name";
 }
 
 function zip_up_workspace_and_put_it_in_repo_directory_and_update_log(){
@@ -183,6 +188,19 @@ function zip_up_workspace_and_put_it_in_repo_directory_and_update_log(){
     zip_script_start=$(get_current_time_nano_seconds_since_epoch);
     zip -r "$cleanup_repo_directory_name_and_path/c9_vm_zips/$zip_file_name" "workspace"* >> "$log_directory_name_and_path"/"$temp_log_file_name";
     zip_script_end=$(get_current_time_nano_seconds_since_epoch);
+}
+
+function fill_logs_pre_push(){
+    cd $GOPATH;
+    cd ..;
+    
+    echo_line_break "PPS" >> "$log_directory_name_and_path"/"$long_log_name";
+    timestamp_script_and_echo "PrePush" >> "$log_directory_name_and_path"/"$long_log_name";
+    echo_timestamp_zip >>  "$log_directory_name_and_path"/"$long_log_name";
+    echo_timestamp_clone >>  "$log_directory_name_and_path"/"$long_log_name";
+    echo_line_break >> "$log_directory_name_and_path"/"$long_log_name";
+    cat "$log_directory_name_and_path"/"$temp_log_file_name" >> "$log_directory_name_and_path"/"$long_log_name";
+    echo_line_break "PPF" >> "$log_directory_name_and_path"/"$long_log_name";
 }
 
 run_script
